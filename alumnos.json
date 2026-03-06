@@ -1,0 +1,32 @@
+{
+  "2024001": {
+    "nombre": "Juan Pérez",
+    "carrera": "Ingeniería en Sistemas",
+    "historial": [
+      {
+        "materia": "Bases de Datos",
+        "calificacion": 9.5,
+        "periodo": "2024-1",
+        "fecha": "2026-03-02"
+      },
+      {
+        "materia": "Programación",
+        "calificacion": 8.7,
+        "periodo": "2024-1",
+        "fecha": "2026-03-02"
+      }
+    ]
+  },
+  "2024002": {
+    "nombre": "María García",
+    "carrera": "Arquitectura de Datos",
+    "historial": [
+      {
+        "materia": "Data Warehousing",
+        "calificacion": 9.8,
+        "periodo": "2024-1",
+        "fecha": "2026-03-02"
+      }
+    ]
+  }
+}

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestion de Alumnos</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Gestion de Alumnos</h1>
+        </header>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar por matricula, nombre, email o ciudad...">
+                <button onclick="buscarAlumno()">Buscar</button>
+                <button onclick="mostrarTodos()">Ver Todos</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="cambiarTab('datos', this)">Datos Personales</button>
+                <button class="tab-btn" onclick="cambiarTab('materias', this)">Materias Actuales</button>
+                <button class="tab-btn" onclick="cambiarTab('historial', this)">Historial Academico</button>
+                <button class="tab-btn" onclick="cambiarTab('inscripcion', this)">Inscripcion</button>
+                <button class="tab-btn" onclick="cambiarTab('mapa', this)">Ubicacion</button>
+            </div>
+
+            <div id="datos" class="tab-content active">
+                <h2>Datos Personales</h2>
+                <div id="datosPersonales"></div>
+            </div>
+
+            <div id="materias" class="tab-content">
+                <h2>Materias del Semestre Actual</h2>
+                <div id="materiasActuales"></div>
+            </div>
+
+            <div id="historial" class="tab-content">
+                <h2>Historial Academico</h2>
+                <div id="historialAcademico"></div>
+            </div>
+
+            <div id="inscripcion" class="tab-content">
+                <h2>Inscripcion a Materias</h2>
+                <div id="inscripcionPanel"></div>
+            </div>
+
+            <div id="mapa" class="tab-content">
+                <h2>Ubicacion Geografica</h2>
+                <div id="mapContainer" style="height: 500px;"></div>
+            </div>
+        </div>
+
+        <div id="estadisticas" class="stats-section">
+            <div class="stat-card">
+                <h3>Total Alumnos</h3>
+                <p id="totalAlumnos">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Alumnos Activos</h3>
+                <p id="alumnosActivos">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Promedio General</h3>
+                <p id="promedioGeneral">0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+id_historial,matricula,codigo_materia,nombre_materia,calificacion,creditos,periodo,año,estatus
+1,2024001,PROG101,Fundamentos de Programación,9.2,8,2023-2,2023,Aprobado
+2,2024001,MAT101,Matemáticas Discretas,8.5,8,2023-2,2023,Aprobado
+3,2024001,FUND101,Introducción a la Ingeniería,9.0,6,2023-2,2023,Aprobado
+4,2024001,BD201,Bases de Datos,9.5,8,2024-1,2024,Aprobado
+5,2024001,PROG201,Programación Orientada a Objetos,8.7,6,2024-1,2024,Aprobado
+6,2024001,ALG201,Algoritmos,9.0,8,2024-1,2024,Aprobado
+7,2024002,PYTH101,Introducción a Python,9.9,6,2024-1,2024,Aprobado
+8,2024002,MAT101,Matemáticas Discretas,9.0,8,2024-1,2024,Aprobado
+9,2024002,EST101,Estadística,9.5,6,2024-1,2024,Aprobado
+10,2024003,PROG101,Fundamentos de Programación,8.8,8,2023-1,2023,Aprobado
+11,2024003,MAT101,Matemáticas Discretas,8.2,8,2023-1,2023,Aprobado
+12,2024003,FUND101,Introducción a la Ingeniería,9.1,6,2023-1,2023,Aprobado
+13,2024003,BD201,Bases de Datos,9.1,8,2023-2,2023,Aprobado
+14,2024003,PROG201,Programación Orientada a Objetos,8.9,6,2023-2,2023,Aprobado
+15,2024003,RED201,Redes de Computadoras,7.8,6,2023-2,2023,Aprobado
+16,2024003,WEB201,Desarrollo Web,8.5,8,2024-1,2024,Aprobado
+17,2024003,SO201,Sistemas Operativos,8.3,6,2024-1,2024,Aprobado
+18,2024004,MAT001,Matemáticas Básicas,9.8,6,2024-1,2024,Aprobado
+19,2024004,COMP001,Introducción a la Computación,10.0,4,2024-1,2024,Aprobado
+20,2024005,PROG101,Fundamentos de Programación,8.5,8,2023-2,2023,Aprobado
+21,2024005,MAT101,Matemáticas Discretas,8.0,8,2023-2,2023,Aprobado
+22,2024005,FUND101,Introducción a la Ingeniería,8.8,6,2023-2,2023,Aprobado
+23,2024005,BD201,Bases de Datos,9.0,8,2024-1,2024,Aprobado
+24,2024005,PROG201,Programación Orientada a Objetos,8.6,6,2024-1,2024,Aprobado
+25,2024006,PYTH101,Introducción a Python,9.5,6,2024-1,2024,Aprobado
+26,2024006,EST101,Estadística,9.2,6,2024-1,2024,Aprobado
+27,2024007,PROG101,Fundamentos de Programación,7.5,8,2023-2,2023,Aprobado
+28,2024007,MAT101,Matemáticas Discretas,6.8,8,2023-2,2023,Aprobado
+29,2024007,BD201,Bases de Datos,7.0,8,2024-1,2024,Aprobado
+30,2024008,PYTH101,Introducción a Python,9.7,6,2024-1,2024,Aprobado
+31,2024008,MAT101,Matemáticas Discretas,9.3,8,2024-1,2024,Aprobado

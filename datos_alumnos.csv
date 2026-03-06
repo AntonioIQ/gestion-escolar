@@ -1,0 +1,9 @@
+matricula,nombre,apellido,fecha_nacimiento,genero,email,telefono,direccion,ciudad,estado,codigo_postal,latitud,longitud,fecha_ingreso,estatus
+2024001,Juan,Pérez,2002-05-15,M,juan.perez@universidad.edu,5551234567,Av. Universidad 123,Monterrey,Nuevo León,64000,25.6866,-100.3161,2023-08-15,Activo
+2024002,María,García,2003-08-22,F,maria.garcia@universidad.edu,5552345678,Calle Reforma 456,Monterrey,Nuevo León,64010,25.6751,-100.3099,2024-01-10,Activo
+2024003,Carlos,López,2001-11-30,M,carlos.lopez@universidad.edu,5553456789,Blvd. Constitución 789,San Pedro,Nuevo León,66230,25.6520,-100.4095,2023-01-20,Activo
+2024004,Ana,Martínez,2004-03-12,F,ana.martinez@universidad.edu,5554567890,Av. Lázaro Cárdenas 321,Guadalupe,Nuevo León,67100,25.6767,-100.2569,2024-08-01,Activo
+2024005,Luis,Rodríguez,2002-07-08,M,luis.rodriguez@universidad.edu,5555678901,Calle Hidalgo 654,Monterrey,Nuevo León,64000,25.6692,-100.3097,2023-08-15,Activo
+2024006,Sofia,Hernández,2003-01-25,F,sofia.hernandez@universidad.edu,5556789012,Av. Morones Prieto 987,San Pedro,Nuevo León,66260,25.6588,-100.3631,2024-01-10,Activo
+2024007,Diego,Ramírez,2002-09-18,M,diego.ramirez@universidad.edu,5557890123,Calle Juárez 147,Monterrey,Nuevo León,64000,25.6714,-100.3089,2023-08-15,Baja temporal
+2024008,Valentina,Torres,2003-12-05,F,valentina.torres@universidad.edu,5558901234,Av. Gonzalitos 258,Monterrey,Nuevo León,64000,25.6802,-100.3370,2024-01-10,Activo
