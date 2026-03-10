@@ -1,36 +1,30 @@
 """
-Backend FastAPI para Sistema de Gestión de Alumnos.
-Ejecutar con: uvicorn backend:app --reload
+Backend FastAPI para Sistema de Gestion de Alumnos.
+Ejecutar con: uvicorn app.main:app --reload
 """
 from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2 import pool
 
-DB_CONFIG = {
-    "host": "localhost",
-    "database": "bd_alumnos",
-    "user": "bd_alumnos_admin",
-    "password": "alumnos2026",
-}
+from app.db import close_pool, execute, init_pool, query
 
-db_pool = None
+ROOT_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = ROOT_DIR / "frontend"
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    global db_pool
-    db_pool = pool.ThreadedConnectionPool(2, 10, **DB_CONFIG)
+async def lifespan(_app: FastAPI):
+    init_pool()
     yield
-    db_pool.closeall()
+    close_pool()
 
 
-app = FastAPI(title="Sistema de Gestión de Alumnos", lifespan=lifespan)
+app = FastAPI(title="Sistema de Gestion de Alumnos", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,45 +34,13 @@ app.add_middleware(
 )
 
 
-def get_conn():
-    return db_pool.getconn()
+# ── Alumnos ──────────────────────────────────────────────────────────────────
 
-
-def put_conn(conn):
-    db_pool.putconn(conn)
-
-
-def query(sql, params=None):
-    conn = get_conn()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, params)
-            return cur.fetchall()
-    finally:
-        put_conn(conn)
-
-
-def execute(sql, params=None):
-    conn = get_conn()
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, params)
-            conn.commit()
-            try:
-                return cur.fetchall()
-            except psycopg2.ProgrammingError:
-                return []
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        put_conn(conn)
-
-
-# --- ALUMNOS ---
 
 @app.get("/api/alumnos")
-def listar_alumnos(q: str = Query(default="", description="Buscar por matrícula, nombre, email o ciudad")):
+def listar_alumnos(
+    q: str = Query(default="", description="Buscar por matricula, nombre, email o ciudad"),
+):
     if q:
         like = f"%{q}%"
         return query(
@@ -103,53 +65,41 @@ def obtener_alumno(matricula: int):
     return rows[0]
 
 
-# --- MATERIAS (catálogo) ---
+# ── Materias (catalogo) ─────────────────────────────────────────────────────
+
 
 @app.get("/api/materias")
 def listar_materias():
     return query("SELECT * FROM materias ORDER BY codigo")
 
 
-# --- GRUPOS del periodo activo (para inscripción) ---
+# ── Grupos del periodo activo ────────────────────────────────────────────────
+
 
 @app.get("/api/grupos")
-def listar_grupos(periodo_id: int = None):
+def listar_grupos(periodo_id: int | None = None):
+    base = """SELECT g.id, m.codigo, m.nombre AS materia, m.creditos,
+                     p.nombre AS profesor, a.nombre AS aula, g.horario,
+                     per.nombre AS periodo, g.cupo_maximo,
+                     g.cupo_maximo - COUNT(i.id) AS cupo_disponible
+              FROM grupos g
+              JOIN materias m ON g.materia_codigo = m.codigo
+              JOIN profesores p ON g.profesor_id = p.id
+              JOIN aulas a ON g.aula_id = a.id
+              JOIN periodos per ON g.periodo_id = per.id
+              LEFT JOIN inscripciones i ON i.grupo_id = g.id"""
+
+    group_by = """GROUP BY g.id, m.codigo, m.nombre, m.creditos,
+                          p.nombre, a.nombre, g.horario, per.nombre, g.cupo_maximo
+                  ORDER BY m.nombre"""
+
     if periodo_id:
-        return query(
-            """SELECT g.id, m.codigo, m.nombre AS materia, m.creditos,
-                      p.nombre AS profesor, a.nombre AS aula, g.horario,
-                      per.nombre AS periodo, g.cupo_maximo,
-                      g.cupo_maximo - COUNT(i.id) AS cupo_disponible
-               FROM grupos g
-               JOIN materias m ON g.materia_codigo = m.codigo
-               JOIN profesores p ON g.profesor_id = p.id
-               JOIN aulas a ON g.aula_id = a.id
-               JOIN periodos per ON g.periodo_id = per.id
-               LEFT JOIN inscripciones i ON i.grupo_id = g.id
-               WHERE g.periodo_id = %s
-               GROUP BY g.id, m.codigo, m.nombre, m.creditos, p.nombre, a.nombre, g.horario, per.nombre, g.cupo_maximo
-               ORDER BY m.nombre""",
-            (periodo_id,),
-        )
-    # Por defecto: periodo activo
-    return query(
-        """SELECT g.id, m.codigo, m.nombre AS materia, m.creditos,
-                  p.nombre AS profesor, a.nombre AS aula, g.horario,
-                  per.nombre AS periodo, g.cupo_maximo,
-                  g.cupo_maximo - COUNT(i.id) AS cupo_disponible
-           FROM grupos g
-           JOIN materias m ON g.materia_codigo = m.codigo
-           JOIN profesores p ON g.profesor_id = p.id
-           JOIN aulas a ON g.aula_id = a.id
-           JOIN periodos per ON g.periodo_id = per.id
-           LEFT JOIN inscripciones i ON i.grupo_id = g.id
-           WHERE per.activo = TRUE
-           GROUP BY g.id, m.codigo, m.nombre, m.creditos, p.nombre, a.nombre, g.horario, per.nombre, g.cupo_maximo
-           ORDER BY m.nombre"""
-    )
+        return query(f"{base} WHERE g.periodo_id = %s {group_by}", (periodo_id,))
+    return query(f"{base} WHERE per.activo = TRUE {group_by}")
 
 
-# --- INSCRIPCIONES ---
+# ── Inscripciones ────────────────────────────────────────────────────────────
+
 
 class InscripcionRequest(BaseModel):
     alumno_matricula: int
@@ -172,13 +122,13 @@ def inscribir_alumno(req: InscripcionRequest):
     if rows[0]["cupo_disponible"] <= 0:
         raise HTTPException(409, "No hay cupo disponible en este grupo")
 
-    # Verificar que no esté ya inscrito
+    # Verificar duplicado
     existing = query(
         "SELECT id FROM inscripciones WHERE alumno_matricula = %s AND grupo_id = %s",
         (req.alumno_matricula, req.grupo_id),
     )
     if existing:
-        raise HTTPException(409, "El alumno ya está inscrito en este grupo")
+        raise HTTPException(409, "El alumno ya esta inscrito en este grupo")
 
     # Verificar empalme de horarios
     empalme = query(
@@ -203,7 +153,7 @@ def inscribir_alumno(req: InscripcionRequest):
            VALUES (%s, %s) RETURNING id, fecha_inscripcion""",
         (req.alumno_matricula, req.grupo_id),
     )
-    return {"mensaje": "Inscripción exitosa", "inscripcion": result[0]}
+    return {"mensaje": "Inscripcion exitosa", "inscripcion": result[0]}
 
 
 @app.delete("/api/inscripciones/{inscripcion_id}")
@@ -212,8 +162,8 @@ def cancelar_inscripcion(inscripcion_id: int):
         "DELETE FROM inscripciones WHERE id = %s RETURNING id", (inscripcion_id,)
     )
     if not result:
-        raise HTTPException(404, "Inscripción no encontrada")
-    return {"mensaje": "Inscripción cancelada"}
+        raise HTTPException(404, "Inscripcion no encontrada")
+    return {"mensaje": "Inscripcion cancelada"}
 
 
 @app.get("/api/alumnos/{matricula}/inscripciones")
@@ -235,7 +185,8 @@ def inscripciones_alumno(matricula: int):
     )
 
 
-# --- HISTORIAL ACADÉMICO ---
+# ── Historial academico ─────────────────────────────────────────────────────
+
 
 @app.get("/api/alumnos/{matricula}/historial")
 def historial_alumno(matricula: int):
@@ -252,7 +203,8 @@ def historial_alumno(matricula: int):
     )
 
 
-# --- ESTADÍSTICAS ---
+# ── Estadisticas ─────────────────────────────────────────────────────────────
+
 
 @app.get("/api/estadisticas")
 def estadisticas():
@@ -265,18 +217,19 @@ def estadisticas():
     return stats[0]
 
 
-# --- PERIODOS ---
+# ── Periodos ─────────────────────────────────────────────────────────────────
+
 
 @app.get("/api/periodos")
 def listar_periodos():
     return query("SELECT * FROM periodos ORDER BY anio DESC, nombre DESC")
 
 
-# --- Servir frontend ---
+# ── Servir frontend ──────────────────────────────────────────────────────────
 
-app.mount("/static", StaticFiles(directory="."), name="static")
+app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
 @app.get("/")
 def index():
-    return FileResponse("index.html")
+    return FileResponse(FRONTEND_DIR / "index.html")

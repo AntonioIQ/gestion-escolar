@@ -1,16 +1,21 @@
 """
-Migra los datos de los CSVs existentes a PostgreSQL.
-Ejecutar una sola vez después de crear el esquema.
+Migra los datos de los CSVs a PostgreSQL.
+Ejecutar una sola vez despues de crear el esquema:
+    python -m sql.migrate
 """
 import csv
+import sys
+from pathlib import Path
+
 import psycopg2
 
-DB_CONFIG = {
-    "host": "localhost",
-    "database": "bd_alumnos",
-    "user": "bd_alumnos_admin",
-    "password": "alumnos2026",
-}
+# Permitir importar app.config al ejecutar desde la raiz del proyecto
+ROOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT_DIR))
+
+from app.config import DB_CONFIG
+
+DATA_DIR = ROOT_DIR / "data"
 
 
 def conectar():
@@ -23,7 +28,7 @@ def migrar():
 
     # 1. Migrar alumnos
     print("Migrando alumnos...")
-    with open("datos_alumnos.csv", encoding="utf-8") as f:
+    with open(DATA_DIR / "datos_alumnos.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             cur.execute(
@@ -53,36 +58,30 @@ def migrar():
             )
     print(f"  -> {cur.rowcount} alumnos insertados")
 
-    # 2. Extraer y migrar materias, profesores, aulas y periodos desde los CSVs
+    # 2. Extraer catalogos desde los CSVs
     materias = {}
     profesores = set()
     aulas = set()
     periodos = set()
 
-    # Desde materias_actuales.csv
-    with open("materias_actuales.csv", encoding="utf-8") as f:
+    with open(DATA_DIR / "materias_actuales.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             materias[row["codigo_materia"]] = (row["nombre_materia"], int(row["creditos"]))
             profesores.add(row["profesor"])
             aulas.add(row["aula"])
-            semestre = row["semestre"]
-            anio = int(row["año"])
-            periodos.add((semestre, anio))
+            periodos.add((row["semestre"], int(row["año"])))
 
-    # Desde historial_academico.csv
-    with open("historial_academico.csv", encoding="utf-8") as f:
+    with open(DATA_DIR / "historial_academico.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         historial_rows = list(reader)
         for row in historial_rows:
             codigo = row["codigo_materia"]
             if codigo not in materias:
                 materias[codigo] = (row["nombre_materia"], int(row["creditos"]))
-            periodo = row["periodo"]
-            anio = int(row["año"])
-            periodos.add((periodo, anio))
+            periodos.add((row["periodo"], int(row["año"])))
 
-    # Insertar materias
+    # Insertar catalogos
     print("Migrando materias...")
     for codigo, (nombre, creditos) in materias.items():
         cur.execute(
@@ -90,7 +89,6 @@ def migrar():
             (codigo, nombre, creditos),
         )
 
-    # Insertar profesores
     print("Migrando profesores...")
     for prof in profesores:
         cur.execute(
@@ -98,7 +96,6 @@ def migrar():
             (prof,),
         )
 
-    # Insertar aulas
     print("Migrando aulas...")
     for aula in aulas:
         cur.execute(
@@ -106,16 +103,19 @@ def migrar():
             (aula,),
         )
 
-    # Insertar periodos
     print("Migrando periodos...")
     for nombre_periodo, anio in periodos:
         cur.execute(
             "INSERT INTO periodos (nombre, anio) VALUES (%s, %s) ON CONFLICT DO NOTHING",
             (nombre_periodo, anio),
         )
-    # Marcar el periodo más reciente como activo
+
+    # Marcar el periodo mas reciente como activo
     cur.execute(
-        "UPDATE periodos SET activo = TRUE WHERE (anio, nombre) = (SELECT anio, nombre FROM periodos ORDER BY anio DESC, nombre DESC LIMIT 1)"
+        """UPDATE periodos SET activo = TRUE
+           WHERE (anio, nombre) = (
+               SELECT anio, nombre FROM periodos ORDER BY anio DESC, nombre DESC LIMIT 1
+           )"""
     )
 
     conn.commit()
@@ -123,23 +123,20 @@ def migrar():
     # Cargar mapas de IDs
     cur.execute("SELECT nombre, id FROM profesores")
     prof_map = dict(cur.fetchall())
-
     cur.execute("SELECT nombre, id FROM aulas")
     aula_map = dict(cur.fetchall())
-
     cur.execute("SELECT nombre, id FROM periodos")
     periodo_map = dict(cur.fetchall())
 
-    # 3. Migrar grupos e inscripciones desde materias_actuales.csv
+    # 3. Migrar grupos e inscripciones
     print("Migrando grupos e inscripciones...")
-    with open("materias_actuales.csv", encoding="utf-8") as f:
+    with open(DATA_DIR / "materias_actuales.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
             profesor_id = prof_map[row["profesor"]]
             aula_id = aula_map[row["aula"]]
             periodo_id = periodo_map[row["semestre"]]
 
-            # Insertar grupo si no existe
             cur.execute(
                 """INSERT INTO grupos (materia_codigo, profesor_id, aula_id, periodo_id, horario)
                    VALUES (%s, %s, %s, %s, %s)
@@ -153,21 +150,20 @@ def migrar():
             else:
                 cur.execute(
                     """SELECT id FROM grupos
-                       WHERE materia_codigo = %s AND profesor_id = %s AND periodo_id = %s AND horario = %s""",
+                       WHERE materia_codigo = %s AND profesor_id = %s
+                         AND periodo_id = %s AND horario = %s""",
                     (row["codigo_materia"], profesor_id, periodo_id, row["horario"]),
                 )
                 grupo_id = cur.fetchone()[0]
 
-            # Inscribir alumno
             cur.execute(
                 """INSERT INTO inscripciones (alumno_matricula, grupo_id)
-                   VALUES (%s, %s)
-                   ON CONFLICT DO NOTHING""",
+                   VALUES (%s, %s) ON CONFLICT DO NOTHING""",
                 (int(row["matricula"]), grupo_id),
             )
 
-    # 4. Migrar historial académico
-    print("Migrando historial académico...")
+    # 4. Migrar historial academico
+    print("Migrando historial academico...")
     for row in historial_rows:
         periodo_id = periodo_map[row["periodo"]]
         cur.execute(
@@ -187,13 +183,16 @@ def migrar():
     conn.commit()
 
     # Resumen
-    for tabla in ["alumnos", "materias", "profesores", "aulas", "periodos", "grupos", "inscripciones", "historial_academico"]:
+    for tabla in [
+        "alumnos", "materias", "profesores", "aulas",
+        "periodos", "grupos", "inscripciones", "historial_academico",
+    ]:
         cur.execute(f"SELECT COUNT(*) FROM {tabla}")
         print(f"  {tabla}: {cur.fetchone()[0]} registros")
 
     cur.close()
     conn.close()
-    print("\nMigración completada.")
+    print("\nMigracion completada.")
 
 
 if __name__ == "__main__":

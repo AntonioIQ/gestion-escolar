@@ -1,45 +1,90 @@
-# Sistema de Gestión de Alumnos
+# Sistema de Gestion de Alumnos
 
-Sistema completo con múltiples bases de datos CSV y visualización interactiva.
+Aplicacion web para gestionar alumnos, inscripciones y historial academico de una escuela.
 
-## 📁 Estructura de Archivos
+**Stack:** FastAPI + PostgreSQL + HTML/JS/CSS (vanilla)
 
-- **datos_alumnos.csv** - Datos personales, contacto y geolocalización
-- **materias_actuales.csv** - Materias inscritas en el semestre actual
-- **historial_academico.csv** - Historial completo de calificaciones
-- **app.py** - Aplicación web interactiva con Streamlit
+## Estructura del proyecto
 
-## 🚀 Instalación
+```
+BD_alumnos/
+├── app/                  # Backend FastAPI
+│   ├── main.py           # Rutas y punto de entrada
+│   ├── config.py         # Configuracion desde .env
+│   └── db.py             # Pool de conexiones PostgreSQL
+├── frontend/             # Interfaz web
+│   ├── index.html
+│   ├── app.js
+│   └── styles.css
+├── sql/                  # Base de datos
+│   ├── schema.sql        # Esquema (tablas, indices, vistas)
+│   └── migrate.py        # Migracion de CSVs a PostgreSQL
+├── data/                 # Datos iniciales (CSVs)
+│   ├── datos_alumnos.csv
+│   ├── materias_actuales.csv
+│   └── historial_academico.csv
+├── .env.example          # Variables de entorno (plantilla)
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+## Instalacion
+
+### 1. Dependencias Python
 
 ```bash
-# Instalar dependencias
 pip install -r requirements.txt
 ```
 
-## 💻 Uso
+### 2. Base de datos
 
-### Ejecutar la aplicación web:
-```bash
-streamlit run app.py
+Crear la base de datos y el usuario en PostgreSQL:
+
+```sql
+CREATE USER bd_alumnos_admin WITH PASSWORD 'tu_password';
+CREATE DATABASE bd_alumnos OWNER bd_alumnos_admin;
 ```
 
-## ✨ Características
+Aplicar el esquema:
 
-- 🔍 **Búsqueda** por matrícula o nombre
-- 📋 **Datos personales** con información de contacto
-- 📚 **Materias actuales** del semestre en curso
-- 📊 **Historial académico** completo con visualizaciones
-- 🗺️ **Mapa interactivo** con ubicación de alumnos
-- 📈 **Gráficas** de evolución y rendimiento
-- 🎯 **Métricas** de promedio, créditos y más
+```bash
+psql -U bd_alumnos_admin -d bd_alumnos -f sql/schema.sql
+```
 
-## 📊 Bases de Datos
+### 3. Configuracion
 
-### datos_alumnos.csv
-Contiene: matrícula, nombre, apellido, fecha_nacimiento, género, email, teléfono, dirección, ciudad, estado, código_postal, latitud, longitud, fecha_ingreso, estatus
+Copiar `.env.example` a `.env` y ajustar las credenciales:
 
-### materias_actuales.csv
-Contiene: id_inscripcion, matrícula, código_materia, nombre_materia, créditos, profesor, horario, aula, semestre, año
+```bash
+cp .env.example .env
+```
 
-### historial_academico.csv
-Contiene: id_historial, matrícula, código_materia, nombre_materia, calificación, créditos, periodo, año, estatus
+### 4. Migrar datos iniciales (opcional)
+
+```bash
+python -m sql.migrate
+```
+
+## Ejecucion
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Abrir http://localhost:8000 en el navegador.
+
+## API
+
+| Metodo   | Ruta                                  | Descripcion                        |
+|----------|---------------------------------------|------------------------------------|
+| `GET`    | `/api/alumnos?q=`                     | Listar/buscar alumnos              |
+| `GET`    | `/api/alumnos/{matricula}`            | Detalle de un alumno               |
+| `GET`    | `/api/alumnos/{matricula}/inscripciones` | Inscripciones del alumno        |
+| `GET`    | `/api/alumnos/{matricula}/historial`  | Historial academico                |
+| `GET`    | `/api/materias`                       | Catalogo de materias               |
+| `GET`    | `/api/grupos?periodo_id=`             | Grupos disponibles                 |
+| `POST`   | `/api/inscripciones`                  | Inscribir alumno a grupo           |
+| `DELETE` | `/api/inscripciones/{id}`             | Cancelar inscripcion               |
+| `GET`    | `/api/estadisticas`                   | Estadisticas generales             |
+| `GET`    | `/api/periodos`                       | Lista de periodos academicos       |
