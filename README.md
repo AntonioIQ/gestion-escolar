@@ -23,8 +23,12 @@ BD_alumnos/
 │   ├── datos_alumnos.csv
 │   ├── materias_actuales.csv
 │   └── historial_academico.csv
+├── sync/                 # Sincronizacion con Google Forms
+│   ├── google_sheets.py  # Script de importacion
+│   └── SETUP_GOOGLE.md   # Guia de configuracion paso a paso
 ├── .env.example          # Variables de entorno (plantilla)
 ├── .gitignore
+├── gestion-escolar.service  # Servicio systemd (arranque automatico)
 ├── requirements.txt
 └── README.md
 ```
@@ -73,6 +77,24 @@ uvicorn app.main:app --reload
 ```
 
 Abrir http://localhost:8000 en el navegador.
+
+### Arranque automatico (servidor dedicado)
+
+Para que el sistema inicie automaticamente al encender la maquina:
+
+```bash
+sudo cp gestion-escolar.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable gestion-escolar
+sudo systemctl start gestion-escolar
+```
+
+Verificar estado: `sudo systemctl status gestion-escolar`
+
+### Sincronizacion con Google Forms (opcional)
+
+Permite capturar datos de alumnos via Google Forms.
+Ver instrucciones completas en [sync/SETUP_GOOGLE.md](sync/SETUP_GOOGLE.md).
 
 ## API
 

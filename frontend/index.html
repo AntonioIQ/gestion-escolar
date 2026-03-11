@@ -10,64 +10,102 @@
 <body>
     <div class="container">
         <header>
-            <h1>Sistema de Gestion de Alumnos</h1>
+            <h1>Sistema de Gestion Escolar</h1>
+            <div class="mode-toggle">
+                <button id="btnConsultas" class="mode-btn active" onclick="cambiarModo('consultas')">Consultas</button>
+                <button id="btnAdmin" class="mode-btn" onclick="cambiarModo('admin')">Administracion</button>
+            </div>
         </header>
 
-        <div class="search-section">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Buscar por matricula, nombre, email o ciudad...">
-                <button onclick="buscarAlumno()">Buscar</button>
-                <button onclick="mostrarTodos()">Ver Todos</button>
+        <!-- ═══ MODO CONSULTAS ═══ -->
+        <div id="modoConsultas">
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Buscar por matricula, nombre, email o ciudad...">
+                    <button onclick="buscarAlumno()">Buscar</button>
+                    <button onclick="mostrarTodos()">Ver Todos</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="cambiarTab('datos', this)">Datos Personales</button>
+                    <button class="tab-btn" onclick="cambiarTab('materias', this)">Materias Actuales</button>
+                    <button class="tab-btn" onclick="cambiarTab('historial', this)">Historial Academico</button>
+                    <button class="tab-btn" onclick="cambiarTab('inscripcion', this)">Inscripcion</button>
+                    <button class="tab-btn" onclick="cambiarTab('mapa', this)">Ubicacion</button>
+                </div>
+
+                <div id="datos" class="tab-content active">
+                    <h2>Datos Personales</h2>
+                    <div id="datosPersonales"></div>
+                </div>
+                <div id="materias" class="tab-content">
+                    <h2>Materias del Semestre Actual</h2>
+                    <div id="materiasActuales"></div>
+                </div>
+                <div id="historial" class="tab-content">
+                    <h2>Historial Academico</h2>
+                    <div id="historialAcademico"></div>
+                </div>
+                <div id="inscripcion" class="tab-content">
+                    <h2>Inscripcion a Materias</h2>
+                    <div id="inscripcionPanel"></div>
+                </div>
+                <div id="mapa" class="tab-content">
+                    <h2>Ubicacion Geografica</h2>
+                    <div id="mapContainer" style="height: 500px;"></div>
+                </div>
+            </div>
+
+            <div id="estadisticas" class="stats-section">
+                <div class="stat-card"><h3>Total Alumnos</h3><p id="totalAlumnos">0</p></div>
+                <div class="stat-card"><h3>Alumnos Activos</h3><p id="alumnosActivos">0</p></div>
+                <div class="stat-card"><h3>Promedio General</h3><p id="promedioGeneral">0.00</p></div>
             </div>
         </div>
 
-        <div class="content">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="cambiarTab('datos', this)">Datos Personales</button>
-                <button class="tab-btn" onclick="cambiarTab('materias', this)">Materias Actuales</button>
-                <button class="tab-btn" onclick="cambiarTab('historial', this)">Historial Academico</button>
-                <button class="tab-btn" onclick="cambiarTab('inscripcion', this)">Inscripcion</button>
-                <button class="tab-btn" onclick="cambiarTab('mapa', this)">Ubicacion</button>
-            </div>
+        <!-- ═══ MODO ADMINISTRACION ═══ -->
+        <div id="modoAdmin" style="display: none;">
+            <div class="content">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="cambiarTabAdmin('adminAlumnos', this)">Alumnos</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminMaterias', this)">Materias</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminProfesores', this)">Profesores</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminAulas', this)">Aulas</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminPeriodos', this)">Periodos</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminGrupos', this)">Grupos</button>
+                    <button class="tab-btn" onclick="cambiarTabAdmin('adminCalificaciones', this)">Calificaciones</button>
+                </div>
 
-            <div id="datos" class="tab-content active">
-                <h2>Datos Personales</h2>
-                <div id="datosPersonales"></div>
-            </div>
-
-            <div id="materias" class="tab-content">
-                <h2>Materias del Semestre Actual</h2>
-                <div id="materiasActuales"></div>
-            </div>
-
-            <div id="historial" class="tab-content">
-                <h2>Historial Academico</h2>
-                <div id="historialAcademico"></div>
-            </div>
-
-            <div id="inscripcion" class="tab-content">
-                <h2>Inscripcion a Materias</h2>
-                <div id="inscripcionPanel"></div>
-            </div>
-
-            <div id="mapa" class="tab-content">
-                <h2>Ubicacion Geografica</h2>
-                <div id="mapContainer" style="height: 500px;"></div>
-            </div>
-        </div>
-
-        <div id="estadisticas" class="stats-section">
-            <div class="stat-card">
-                <h3>Total Alumnos</h3>
-                <p id="totalAlumnos">0</p>
-            </div>
-            <div class="stat-card">
-                <h3>Alumnos Activos</h3>
-                <p id="alumnosActivos">0</p>
-            </div>
-            <div class="stat-card">
-                <h3>Promedio General</h3>
-                <p id="promedioGeneral">0.00</p>
+                <div id="adminAlumnos" class="tab-content active">
+                    <h2>Registrar Alumno</h2>
+                    <div id="panelAdminAlumnos"></div>
+                </div>
+                <div id="adminMaterias" class="tab-content">
+                    <h2>Catalogo de Materias</h2>
+                    <div id="panelAdminMaterias"></div>
+                </div>
+                <div id="adminProfesores" class="tab-content">
+                    <h2>Profesores</h2>
+                    <div id="panelAdminProfesores"></div>
+                </div>
+                <div id="adminAulas" class="tab-content">
+                    <h2>Aulas</h2>
+                    <div id="panelAdminAulas"></div>
+                </div>
+                <div id="adminPeriodos" class="tab-content">
+                    <h2>Periodos Academicos</h2>
+                    <div id="panelAdminPeriodos"></div>
+                </div>
+                <div id="adminGrupos" class="tab-content">
+                    <h2>Grupos</h2>
+                    <div id="panelAdminGrupos"></div>
+                </div>
+                <div id="adminCalificaciones" class="tab-content">
+                    <h2>Captura de Calificaciones</h2>
+                    <div id="panelAdminCalificaciones"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -75,5 +113,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/app.js"></script>
+    <script src="/static/admin.js"></script>
 </body>
 </html>

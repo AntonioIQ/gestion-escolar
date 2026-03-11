@@ -1,0 +1,16 @@
+[Unit]
+Description=Sistema de Gestion de Alumnos
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=antonio-tapia
+WorkingDirectory=/home/antonio-tapia/Documentos/BD_alumnos
+ExecStart=/home/antonio-tapia/anaconda3/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+EnvironmentFile=/home/antonio-tapia/Documentos/BD_alumnos/.env
+
+[Install]
+WantedBy=multi-user.target

@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import Optional
 
 from app.db import close_pool, execute, init_pool, query
 
@@ -65,12 +66,162 @@ def obtener_alumno(matricula: int):
     return rows[0]
 
 
+class AlumnoRequest(BaseModel):
+    matricula: int
+    nombre: str
+    apellido: str
+    fecha_nacimiento: Optional[str] = None
+    genero: Optional[str] = None
+    email: Optional[str] = None
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    ciudad: Optional[str] = None
+    estado: Optional[str] = None
+    codigo_postal: Optional[str] = None
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
+    estatus: str = "Activo"
+
+
+@app.post("/api/alumnos")
+def crear_alumno(req: AlumnoRequest):
+    result = execute(
+        """INSERT INTO alumnos
+           (matricula, nombre, apellido, fecha_nacimiento, genero, email,
+            telefono, direccion, ciudad, estado, codigo_postal, latitud, longitud,
+            fecha_ingreso, estatus)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, CURRENT_DATE, %s)
+           RETURNING matricula""",
+        (req.matricula, req.nombre, req.apellido, req.fecha_nacimiento,
+         req.genero, req.email, req.telefono, req.direccion, req.ciudad,
+         req.estado, req.codigo_postal, req.latitud, req.longitud, req.estatus),
+    )
+    return {"mensaje": "Alumno registrado", "matricula": result[0]["matricula"]}
+
+
+@app.put("/api/alumnos/{matricula}")
+def actualizar_alumno(matricula: int, req: AlumnoRequest):
+    result = execute(
+        """UPDATE alumnos SET nombre=%s, apellido=%s, fecha_nacimiento=%s,
+           genero=%s, email=%s, telefono=%s, direccion=%s, ciudad=%s,
+           estado=%s, codigo_postal=%s, latitud=%s, longitud=%s, estatus=%s
+           WHERE matricula=%s RETURNING matricula""",
+        (req.nombre, req.apellido, req.fecha_nacimiento, req.genero,
+         req.email, req.telefono, req.direccion, req.ciudad, req.estado,
+         req.codigo_postal, req.latitud, req.longitud, req.estatus, matricula),
+    )
+    if not result:
+        raise HTTPException(404, "Alumno no encontrado")
+    return {"mensaje": "Alumno actualizado"}
+
+
 # ── Materias (catalogo) ─────────────────────────────────────────────────────
 
 
 @app.get("/api/materias")
 def listar_materias():
     return query("SELECT * FROM materias ORDER BY codigo")
+
+
+class MateriaRequest(BaseModel):
+    codigo: str
+    nombre: str
+    creditos: int
+
+
+@app.post("/api/materias")
+def crear_materia(req: MateriaRequest):
+    execute(
+        "INSERT INTO materias (codigo, nombre, creditos) VALUES (%s, %s, %s)",
+        (req.codigo, req.nombre, req.creditos),
+    )
+    return {"mensaje": "Materia creada"}
+
+
+@app.put("/api/materias/{codigo}")
+def actualizar_materia(codigo: str, req: MateriaRequest):
+    result = execute(
+        "UPDATE materias SET nombre=%s, creditos=%s WHERE codigo=%s RETURNING codigo",
+        (req.nombre, req.creditos, codigo),
+    )
+    if not result:
+        raise HTTPException(404, "Materia no encontrada")
+    return {"mensaje": "Materia actualizada"}
+
+
+@app.delete("/api/materias/{codigo}")
+def eliminar_materia(codigo: str):
+    result = execute("DELETE FROM materias WHERE codigo=%s RETURNING codigo", (codigo,))
+    if not result:
+        raise HTTPException(404, "Materia no encontrada")
+    return {"mensaje": "Materia eliminada"}
+
+
+# ── Profesores ───────────────────────────────────────────────────────────────
+
+
+@app.get("/api/profesores")
+def listar_profesores():
+    return query("SELECT * FROM profesores ORDER BY nombre")
+
+
+class ProfesorRequest(BaseModel):
+    nombre: str
+
+
+@app.post("/api/profesores")
+def crear_profesor(req: ProfesorRequest):
+    result = execute(
+        "INSERT INTO profesores (nombre) VALUES (%s) RETURNING id", (req.nombre,)
+    )
+    return {"mensaje": "Profesor registrado", "id": result[0]["id"]}
+
+
+@app.put("/api/profesores/{profesor_id}")
+def actualizar_profesor(profesor_id: int, req: ProfesorRequest):
+    result = execute(
+        "UPDATE profesores SET nombre=%s WHERE id=%s RETURNING id",
+        (req.nombre, profesor_id),
+    )
+    if not result:
+        raise HTTPException(404, "Profesor no encontrado")
+    return {"mensaje": "Profesor actualizado"}
+
+
+@app.delete("/api/profesores/{profesor_id}")
+def eliminar_profesor(profesor_id: int):
+    result = execute("DELETE FROM profesores WHERE id=%s RETURNING id", (profesor_id,))
+    if not result:
+        raise HTTPException(404, "Profesor no encontrado")
+    return {"mensaje": "Profesor eliminado"}
+
+
+# ── Aulas ────────────────────────────────────────────────────────────────────
+
+
+@app.get("/api/aulas")
+def listar_aulas():
+    return query("SELECT * FROM aulas ORDER BY nombre")
+
+
+class AulaRequest(BaseModel):
+    nombre: str
+
+
+@app.post("/api/aulas")
+def crear_aula(req: AulaRequest):
+    result = execute(
+        "INSERT INTO aulas (nombre) VALUES (%s) RETURNING id", (req.nombre,)
+    )
+    return {"mensaje": "Aula creada", "id": result[0]["id"]}
+
+
+@app.delete("/api/aulas/{aula_id}")
+def eliminar_aula(aula_id: int):
+    result = execute("DELETE FROM aulas WHERE id=%s RETURNING id", (aula_id,))
+    if not result:
+        raise HTTPException(404, "Aula no encontrada")
+    return {"mensaje": "Aula eliminada"}
 
 
 # ── Grupos del periodo activo ────────────────────────────────────────────────
@@ -223,6 +374,143 @@ def estadisticas():
 @app.get("/api/periodos")
 def listar_periodos():
     return query("SELECT * FROM periodos ORDER BY anio DESC, nombre DESC")
+
+
+class PeriodoRequest(BaseModel):
+    nombre: str
+    anio: int
+    activo: bool = False
+
+
+@app.post("/api/periodos")
+def crear_periodo(req: PeriodoRequest):
+    if req.activo:
+        execute("UPDATE periodos SET activo = FALSE WHERE activo = TRUE")
+    result = execute(
+        "INSERT INTO periodos (nombre, anio, activo) VALUES (%s, %s, %s) RETURNING id",
+        (req.nombre, req.anio, req.activo),
+    )
+    return {"mensaje": "Periodo creado", "id": result[0]["id"]}
+
+
+@app.put("/api/periodos/{periodo_id}/activar")
+def activar_periodo(periodo_id: int):
+    execute("UPDATE periodos SET activo = FALSE WHERE activo = TRUE")
+    result = execute(
+        "UPDATE periodos SET activo = TRUE WHERE id = %s RETURNING id", (periodo_id,)
+    )
+    if not result:
+        raise HTTPException(404, "Periodo no encontrado")
+    return {"mensaje": "Periodo activado"}
+
+
+# ── Grupos (CRUD) ────────────────────────────────────────────────────────────
+
+
+class GrupoRequest(BaseModel):
+    materia_codigo: str
+    profesor_id: int
+    aula_id: int
+    periodo_id: int
+    horario: str
+    cupo_maximo: int = 40
+
+
+@app.post("/api/grupos")
+def crear_grupo(req: GrupoRequest):
+    result = execute(
+        """INSERT INTO grupos (materia_codigo, profesor_id, aula_id, periodo_id, horario, cupo_maximo)
+           VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+        (req.materia_codigo, req.profesor_id, req.aula_id,
+         req.periodo_id, req.horario, req.cupo_maximo),
+    )
+    return {"mensaje": "Grupo creado", "id": result[0]["id"]}
+
+
+@app.delete("/api/grupos/{grupo_id}")
+def eliminar_grupo(grupo_id: int):
+    result = execute("DELETE FROM grupos WHERE id=%s RETURNING id", (grupo_id,))
+    if not result:
+        raise HTTPException(404, "Grupo no encontrado")
+    return {"mensaje": "Grupo eliminado"}
+
+
+# ── Calificaciones (captura por profesor) ────────────────────────────────────
+
+
+class CalificacionRequest(BaseModel):
+    alumno_matricula: int
+    materia_codigo: str
+    calificacion: float
+    periodo_id: int
+
+
+@app.post("/api/calificaciones")
+def registrar_calificacion(req: CalificacionRequest):
+    # Obtener creditos de la materia
+    mat = query("SELECT creditos FROM materias WHERE codigo = %s", (req.materia_codigo,))
+    if not mat:
+        raise HTTPException(404, "Materia no encontrada")
+    creditos = mat[0]["creditos"]
+    estatus = "Aprobado" if req.calificacion >= 7 else "Reprobado"
+
+    result = execute(
+        """INSERT INTO historial_academico
+           (alumno_matricula, materia_codigo, calificacion, creditos, periodo_id, estatus)
+           VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+        (req.alumno_matricula, req.materia_codigo, req.calificacion,
+         creditos, req.periodo_id, estatus),
+    )
+    return {"mensaje": "Calificacion registrada", "id": result[0]["id"]}
+
+
+class CalificacionesBulkRequest(BaseModel):
+    grupo_id: int
+    periodo_id: int
+    calificaciones: list[dict]  # [{matricula: int, calificacion: float}]
+
+
+@app.post("/api/calificaciones/grupo")
+def registrar_calificaciones_grupo(req: CalificacionesBulkRequest):
+    # Obtener materia y creditos del grupo
+    grupo = query(
+        "SELECT materia_codigo FROM grupos WHERE id = %s", (req.grupo_id,)
+    )
+    if not grupo:
+        raise HTTPException(404, "Grupo no encontrado")
+    materia_codigo = grupo[0]["materia_codigo"]
+
+    mat = query("SELECT creditos FROM materias WHERE codigo = %s", (materia_codigo,))
+    creditos = mat[0]["creditos"]
+
+    insertados = 0
+    for cal in req.calificaciones:
+        estatus = "Aprobado" if cal["calificacion"] >= 7 else "Reprobado"
+        execute(
+            """INSERT INTO historial_academico
+               (alumno_matricula, materia_codigo, calificacion, creditos, periodo_id, estatus)
+               VALUES (%s, %s, %s, %s, %s, %s)""",
+            (cal["matricula"], materia_codigo, cal["calificacion"],
+             creditos, req.periodo_id, estatus),
+        )
+        insertados += 1
+
+    return {"mensaje": f"{insertados} calificaciones registradas"}
+
+
+# ── Alumnos inscritos en un grupo ────────────────────────────────────────────
+
+
+@app.get("/api/grupos/{grupo_id}/alumnos")
+def alumnos_del_grupo(grupo_id: int):
+    return query(
+        """SELECT a.matricula, a.nombre, a.apellido
+           FROM inscripciones i
+           JOIN alumnos a ON i.alumno_matricula = a.matricula
+           WHERE i.grupo_id = %s
+           ORDER BY a.apellido, a.nombre""",
+        (grupo_id,),
+    )
 
 
 # ── Servir frontend ──────────────────────────────────────────────────────────

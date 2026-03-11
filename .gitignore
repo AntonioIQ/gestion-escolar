@@ -7,8 +7,9 @@ build/
 venv/
 .venv/
 
-# Environment
+# Environment y credenciales
 .env
+sync/credentials.json
 
 # IDE
 .vscode/
