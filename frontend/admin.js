@@ -116,7 +116,7 @@ async function cargarAdminMaterias() {
                     <td>${escapeHtml(m.codigo)}</td>
                     <td>${escapeHtml(m.nombre)}</td>
                     <td>${m.creditos}</td>
-                    <td><button onclick="eliminarMateria('${m.codigo}')" style="background:#dc3545;padding:8px 15px;font-size:14px;">Eliminar</button></td>
+                    <td><button onclick="eliminarMateria('${m.codigo}')" class="btn-danger">Eliminar</button></td>
                 </tr>`).join('')}
             </tbody>
         </table>
@@ -164,7 +164,7 @@ async function cargarAdminProfesores() {
                 ${profesores.map(p => `<tr>
                     <td>${p.id}</td>
                     <td>${escapeHtml(p.nombre)}</td>
-                    <td><button onclick="eliminarProfesor(${p.id})" style="background:#dc3545;padding:8px 15px;font-size:14px;">Eliminar</button></td>
+                    <td><button onclick="eliminarProfesor(${p.id})" class="btn-danger">Eliminar</button></td>
                 </tr>`).join('')}
             </tbody>
         </table>
@@ -208,7 +208,7 @@ async function cargarAdminAulas() {
                 ${aulas.map(a => `<tr>
                     <td>${a.id}</td>
                     <td>${escapeHtml(a.nombre)}</td>
-                    <td><button onclick="eliminarAula(${a.id})" style="background:#dc3545;padding:8px 15px;font-size:14px;">Eliminar</button></td>
+                    <td><button onclick="eliminarAula(${a.id})" class="btn-danger">Eliminar</button></td>
                 </tr>`).join('')}
             </tbody>
         </table>
@@ -256,7 +256,7 @@ async function cargarAdminPeriodos() {
                     <td>${escapeHtml(p.nombre)}</td>
                     <td>${p.anio}</td>
                     <td>${p.activo ? '<span class="badge badge-activo">Activo</span>' : 'Inactivo'}</td>
-                    <td>${!p.activo ? `<button onclick="activarPeriodo(${p.id})" style="background:#28a745;padding:8px 15px;font-size:14px;">Activar</button>` : ''}</td>
+                    <td>${!p.activo ? `<button onclick="activarPeriodo(${p.id})" class="btn-activate">Activar</button>` : ''}</td>
                 </tr>`).join('')}
             </tbody>
         </table>
@@ -337,7 +337,7 @@ async function cargarAdminGrupos() {
                     <td>${escapeHtml(g.horario)}</td>
                     <td>${escapeHtml(g.aula)}</td>
                     <td>${g.cupo_disponible}/${g.cupo_maximo}</td>
-                    <td><button onclick="eliminarGrupo(${g.id})" style="background:#dc3545;padding:8px 15px;font-size:14px;">Eliminar</button></td>
+                    <td><button onclick="eliminarGrupo(${g.id})" class="btn-danger">Eliminar</button></td>
                 </tr>`).join('')}
             </tbody>
         </table>
@@ -421,7 +421,7 @@ async function cargarAlumnosGrupo() {
                     </tr>`).join('')}
                 </tbody>
             </table>
-            <button onclick="guardarCalificaciones(${grupoId}, [${alumnos.map(a => a.matricula).join(',')}])" style="margin-top:15px;background:#28a745;">Guardar Calificaciones</button>
+            <button onclick="guardarCalificaciones(${grupoId}, [${alumnos.map(a => a.matricula).join(',')}])" class="btn-success" style="margin-top:15px;">Guardar Calificaciones</button>
         </div>
     `;
 }

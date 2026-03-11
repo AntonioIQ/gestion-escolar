@@ -101,8 +101,8 @@ function mostrarListaAlumnos(lista) {
     mostrarMensajeSeleccionar();
 
     const html = `
-        <div style="margin-bottom: 20px; padding: 15px; background: #e7f3ff; border-radius: 10px; border-left: 4px solid #667eea;">
-            <strong>${lista.length} resultado(s) encontrado(s)</strong> - Haz clic en un alumno para ver su informacion completa
+        <div class="result-bar">
+            <strong>${lista.length} resultado(s) encontrado(s)</strong> — Haz clic en un alumno para ver su informacion completa
         </div>
         <table>
             <thead>
@@ -152,13 +152,13 @@ function actualizarIndicadorAlumno() {
     if (!indicador) {
         indicador = document.createElement('div');
         indicador.id = 'alumnoIndicador';
-        document.querySelector('.search-section').appendChild(indicador);
+        document.querySelector('.topbar').appendChild(indicador);
     }
     if (alumnoSeleccionado) {
         indicador.innerHTML = `
-            <div style="margin-top: 15px; padding: 12px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; text-align: center; max-width: 800px; margin-left: auto; margin-right: auto;">
+            <div class="alumno-selected-bar">
                 <strong>Alumno seleccionado:</strong> ${escapeHtml(alumnoSeleccionado.nombre + ' ' + alumnoSeleccionado.apellido)} (${alumnoSeleccionado.matricula})
-                <button onclick="deseleccionarAlumno()" style="margin-left: 15px; background: rgba(255,255,255,0.2); padding: 5px 15px; font-size: 13px;">Deseleccionar</button>
+                <button onclick="deseleccionarAlumno()">Deseleccionar</button>
             </div>`;
     } else {
         indicador.innerHTML = '';
@@ -191,7 +191,7 @@ function mostrarDatosAlumno() {
                 <div class="info-item"><label>Estatus</label><span>${escapeHtml(alumno.estatus)}</span></div>
             </div>
         </div>
-        <button onclick="deseleccionarAlumno()" style="margin-top: 15px;">Volver a la lista</button>
+        <button onclick="deseleccionarAlumno()" style="margin-top: 15px;">&#8592; Volver a la lista</button>
     `;
 }
 
@@ -293,7 +293,7 @@ async function cargarHistorialAlumno(matricula) {
                     <tr>
                         <td>${escapeHtml(h.periodo)}-${h.anio}</td>
                         <td>${escapeHtml(h.materia)}</td>
-                        <td style="color: ${Number(h.calificacion) >= 8 ? '#28a745' : Number(h.calificacion) >= 7 ? '#ffc107' : '#dc3545'}; font-weight: bold;">
+                        <td style="color: ${Number(h.calificacion) >= 8 ? '#3d7a5f' : Number(h.calificacion) >= 7 ? '#c08a30' : '#b5403a'}; font-weight: bold;">
                             ${h.calificacion}
                         </td>
                         <td>${h.creditos}</td>
@@ -320,8 +320,8 @@ function crearGrafico(historial) {
             datasets: [{
                 label: 'Calificaciones',
                 data: historial.map(h => Number(h.calificacion)),
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderColor: '#c86753',
+                backgroundColor: 'rgba(200, 103, 83, 0.12)',
                 tension: 0.4,
                 fill: true,
             }],
@@ -361,7 +361,7 @@ async function cargarInscripcionAlumno(matricula) {
                             <td>${escapeHtml(i.profesor)}</td>
                             <td>${escapeHtml(i.horario)}</td>
                             <td>${escapeHtml(i.aula)}</td>
-                            <td><button onclick="cancelarInscripcion(${i.inscripcion_id}, ${alumno.matricula})" style="background: #dc3545; padding: 8px 15px; font-size: 14px;">Dar de baja</button></td>
+                            <td><button onclick="cancelarInscripcion(${i.inscripcion_id}, ${alumno.matricula})" class="btn-danger">Dar de baja</button></td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -385,7 +385,7 @@ async function cargarInscripcionAlumno(matricula) {
                             <td>${escapeHtml(g.horario)}</td>
                             <td>${escapeHtml(g.aula)}</td>
                             <td>${g.cupo_disponible}/${g.cupo_maximo}</td>
-                            <td><button onclick="inscribir(${alumno.matricula}, ${g.id})" style="background: #28a745; padding: 8px 15px; font-size: 14px;">Inscribir</button></td>
+                            <td><button onclick="inscribir(${alumno.matricula}, ${g.id})" class="btn-success">Inscribir</button></td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -456,20 +456,65 @@ function mostrarMapaTodos(lista) {
     });
 }
 
-// --- Tabs ---
+// --- Tabs (legacy compat) ---
 
 function cambiarTab(tabName, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabName).classList.add('active');
-    btn.classList.add('active');
+    navegar('consultas', tabName);
+}
 
-    // Cargar contenido del tab para el alumno seleccionado
-    if (alumnoSeleccionado) {
+// --- Sidebar Navigation ---
+
+function navegar(modo, tabName, navEl) {
+    // Show/hide modes
+    document.getElementById('modoConsultas').style.display = modo === 'consultas' ? '' : 'none';
+    document.getElementById('modoAdmin').style.display = modo === 'admin' ? '' : 'none';
+
+    // Hide all tab-content in both modes
+    const container = document.getElementById(modo === 'consultas' ? 'modoConsultas' : 'modoAdmin');
+    container.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+
+    // Update sidebar active state
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (navEl) navEl.classList.add('active');
+
+    // Load admin data if needed
+    if (modo === 'admin') {
+        const loaders = {
+            adminAlumnos: typeof cargarAdminAlumnos !== 'undefined' ? cargarAdminAlumnos : null,
+            adminMaterias: typeof cargarAdminMaterias !== 'undefined' ? cargarAdminMaterias : null,
+            adminProfesores: typeof cargarAdminProfesores !== 'undefined' ? cargarAdminProfesores : null,
+            adminAulas: typeof cargarAdminAulas !== 'undefined' ? cargarAdminAulas : null,
+            adminPeriodos: typeof cargarAdminPeriodos !== 'undefined' ? cargarAdminPeriodos : null,
+            adminGrupos: typeof cargarAdminGrupos !== 'undefined' ? cargarAdminGrupos : null,
+            adminCalificaciones: typeof cargarAdminCalificaciones !== 'undefined' ? cargarAdminCalificaciones : null,
+        };
+        if (loaders[tabName]) loaders[tabName]();
+    }
+
+    // Load consultas content for selected alumno
+    if (modo === 'consultas' && alumnoSeleccionado) {
         cargarContenidoTab(tabName);
     }
 
     if (tabName === 'mapa' && mapa) {
         setTimeout(() => mapa.invalidateSize(), 100);
     }
+
+    // Close sidebar on mobile
+    document.querySelector('.sidebar').classList.remove('open');
+}
+
+function toggleSidebar() {
+    document.querySelector('.sidebar').classList.toggle('open');
+}
+
+// Legacy compat for admin.js
+function cambiarModo(modo) {
+    const firstTab = modo === 'admin' ? 'adminAlumnos' : 'datos';
+    navegar(modo, firstTab);
+}
+
+function cambiarTabAdmin(tabName, btn) {
+    navegar('admin', tabName);
 }
