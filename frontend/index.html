@@ -3,175 +3,338 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Museo de la Biblia — Gestion Escolar</title>
-    <link rel="stylesheet" href="/static/styles.css?v=12">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>Gestion Escolar</title>
+    <link rel="stylesheet" href="/static/styles.css?v=13">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:wght@600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Background image layer -->
-    <div class="bg-image"></div>
-
-    <div class="app-layout">
-        <!-- ═══ SIDEBAR ═══ -->
-        <aside class="sidebar">
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-brand">
-                <div class="sidebar-title">Gestion Escolar</div>
+                <p class="eyebrow">Plataforma academica</p>
+                <h1 class="brand-title">Gestion Escolar</h1>
+                <p class="brand-copy">Una misma base academica con recorridos distintos para alumno, profesor y administracion.</p>
+            </div>
+
+            <div class="workspace-switcher">
+                <button class="workspace-chip active" id="chipAlumno" onclick="cambiarEspacio('alumno')">Alumno</button>
+                <button class="workspace-chip" id="chipProfesor" onclick="cambiarEspacio('profesor')">Profesor</button>
+                <button class="workspace-chip" id="chipAdmin" onclick="cambiarEspacio('admin')">Administracion</button>
+            </div>
+
+            <div class="sidebar-art">
+                <div class="sidebar-art-copy">
+                    <span class="sidebar-art-label">Criterio de diseno</span>
+                    <strong>Menos ruido, mas tarea.</strong>
+                    <p>El alumno consulta su avance. El profesor opera sus grupos. Control escolar administra el ciclo.</p>
+                </div>
             </div>
 
             <nav class="sidebar-nav">
-                <div class="nav-section">Consultas</div>
-                <a class="nav-item active" onclick="navegar('consultas','datos', this)" data-mode="consultas">
-                    <span class="nav-icon">&#128100;</span> Alumnos
-                </a>
-                <a class="nav-item" onclick="navegar('consultas','materias', this)" data-mode="consultas">
-                    <span class="nav-icon">&#128218;</span> Materias
-                </a>
-                <a class="nav-item" onclick="navegar('consultas','historial', this)" data-mode="consultas">
-                    <span class="nav-icon">&#128200;</span> Historial
-                </a>
-                <a class="nav-item" onclick="navegar('consultas','inscripcion', this)" data-mode="consultas">
-                    <span class="nav-icon">&#9997;</span> Inscripcion
-                </a>
-                <a class="nav-item" onclick="navegar('consultas','mapa', this)" data-mode="consultas">
-                    <span class="nav-icon">&#127759;</span> Ubicacion
-                </a>
+                <div class="nav-group" data-workspace="alumno">
+                    <div class="nav-section">Alumno</div>
+                    <a class="nav-item active" data-workspace="alumno" data-panel="alumnoResumen" onclick="navegar('alumno', 'alumnoResumen', this)">
+                        <span class="nav-icon">&#128196;</span> Resumen
+                    </a>
+                    <a class="nav-item" data-workspace="alumno" data-panel="alumnoMaterias" onclick="navegar('alumno', 'alumnoMaterias', this)">
+                        <span class="nav-icon">&#128218;</span> Materias
+                    </a>
+                    <a class="nav-item" data-workspace="alumno" data-panel="alumnoHistorial" onclick="navegar('alumno', 'alumnoHistorial', this)">
+                        <span class="nav-icon">&#128202;</span> Historial
+                    </a>
+                    <a class="nav-item" data-workspace="alumno" data-panel="alumnoInscripcion" onclick="navegar('alumno', 'alumnoInscripcion', this)">
+                        <span class="nav-icon">&#9997;</span> Inscripcion
+                    </a>
+                </div>
 
-                <div class="nav-section">Administracion</div>
-                <a class="nav-item" onclick="navegar('admin','adminAlumnos', this)" data-mode="admin">
-                    <span class="nav-icon">&#128101;</span> Reg. Alumnos
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminMaterias', this)" data-mode="admin">
-                    <span class="nav-icon">&#128214;</span> Materias
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminProfesores', this)" data-mode="admin">
-                    <span class="nav-icon">&#127891;</span> Profesores
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminAulas', this)" data-mode="admin">
-                    <span class="nav-icon">&#127970;</span> Aulas
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminPeriodos', this)" data-mode="admin">
-                    <span class="nav-icon">&#128197;</span> Periodos
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminGrupos', this)" data-mode="admin">
-                    <span class="nav-icon">&#128203;</span> Grupos
-                </a>
-                <a class="nav-item" onclick="navegar('admin','adminCalificaciones', this)" data-mode="admin">
-                    <span class="nav-icon">&#127942;</span> Calificaciones
-                </a>
+                <div class="nav-group" data-workspace="profesor">
+                    <div class="nav-section">Profesor</div>
+                    <a class="nav-item" data-workspace="profesor" data-panel="profesorResumen" onclick="navegar('profesor', 'profesorResumen', this)">
+                        <span class="nav-icon">&#127891;</span> Panorama
+                    </a>
+                    <a class="nav-item" data-workspace="profesor" data-panel="profesorGrupos" onclick="navegar('profesor', 'profesorGrupos', this)">
+                        <span class="nav-icon">&#128203;</span> Mis grupos
+                    </a>
+                    <a class="nav-item" data-workspace="profesor" data-panel="profesorCalificaciones" onclick="navegar('profesor', 'profesorCalificaciones', this)">
+                        <span class="nav-icon">&#127942;</span> Calificaciones
+                    </a>
+                </div>
+
+                <div class="nav-group" data-workspace="admin">
+                    <div class="nav-section">Administracion</div>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminResumen" onclick="navegar('admin', 'adminResumen', this)">
+                        <span class="nav-icon">&#128200;</span> Panorama
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminAlumnos" onclick="navegar('admin', 'adminAlumnos', this)">
+                        <span class="nav-icon">&#128101;</span> Alumnos
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminMaterias" onclick="navegar('admin', 'adminMaterias', this)">
+                        <span class="nav-icon">&#128214;</span> Materias
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminProfesores" onclick="navegar('admin', 'adminProfesores', this)">
+                        <span class="nav-icon">&#127979;</span> Profesores
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminAulas" onclick="navegar('admin', 'adminAulas', this)">
+                        <span class="nav-icon">&#127970;</span> Aulas
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminPeriodos" onclick="navegar('admin', 'adminPeriodos', this)">
+                        <span class="nav-icon">&#128197;</span> Periodos
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminGrupos" onclick="navegar('admin', 'adminGrupos', this)">
+                        <span class="nav-icon">&#128211;</span> Grupos
+                    </a>
+                    <a class="nav-item" data-workspace="admin" data-panel="adminCalificaciones" onclick="navegar('admin', 'adminCalificaciones', this)">
+                        <span class="nav-icon">&#128221;</span> Captura global
+                    </a>
+                </div>
             </nav>
         </aside>
 
-        <!-- ═══ MAIN CONTENT ═══ -->
         <main class="main-content">
-            <!-- Top bar -->
-            <div class="topbar">
-                <div class="search-box">
-                    <span class="search-icon">&#128269;</span>
-                    <input type="text" id="searchInput" placeholder="Buscar por matricula, nombre, email o ciudad...">
-                    <button onclick="buscarAlumno()" class="btn-search">Buscar</button>
-                    <button onclick="mostrarTodos()" class="btn-outline">Ver Todos</button>
+            <header class="page-header">
+                <div class="page-header-copy">
+                    <p class="page-eyebrow" id="pageEyebrow">Espacio alumno</p>
+                    <h2 class="page-title" id="pageTitle">Consulta de trayectoria</h2>
+                    <p class="page-description" id="pageDescription">Selecciona un alumno y enfoca la experiencia en avance academico, materias e inscripciones.</p>
                 </div>
-            </div>
 
-            <!-- Parallax banner (aligned with stats row) -->
-            <div style="padding-top: 20px;">
-            <div class="parallax-banner">
-                <div class="parallax-overlay">
-                    <h1 class="parallax-title">Gestion Escolar</h1>
-                    <p class="parallax-sub">San Jeronimo en su estudio &mdash; Antonello da Messina, c. 1475</p>
+                <div class="header-spotlight">
+                    <span class="header-spotlight-label">Operacion clara</span>
+                    <strong>La interfaz cambia segun el trabajo que toca hacer.</strong>
+                    <p>Sin autenticacion aun, pero con vistas separadas para que cada rol vea lo que le corresponde.</p>
                 </div>
-            </div>
-            </div>
+            </header>
 
-            <!-- Stats cards -->
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon">&#128100;</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="totalAlumnos">0</span>
-                        <span class="stat-label">Total Alumnos</span>
+            <section class="control-bar">
+                <div class="control-panel active" id="studentControls">
+                    <div class="control-copy">
+                        <span class="control-label">Alumno</span>
+                        <h3>Buscar expediente</h3>
+                        <p>En una version con login, este panel podria abrir directamente el expediente propio.</p>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-green">&#9989;</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="alumnosActivos">0</span>
-                        <span class="stat-label">Activos</span>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon stat-icon-gold">&#11088;</div>
-                    <div class="stat-info">
-                        <span class="stat-value" id="promedioGeneral">0.00</span>
-                        <span class="stat-label">Promedio General</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- ═══ MODO CONSULTAS ═══ -->
-            <div id="modoConsultas">
-                <div id="datos" class="tab-content active">
-                    <div class="section-header"><h2>Alumnos</h2></div>
+                    <div class="control-actions search-cluster">
+                        <input type="text" id="searchInput" placeholder="Buscar por matricula, nombre, email o ciudad">
+                        <button onclick="buscarAlumno()">Buscar</button>
+                        <button class="btn-secondary" onclick="mostrarTodos()">Ver todos</button>
+                    </div>
+
+                    <div class="context-indicator" id="alumnoIndicador"></div>
+                </div>
+
+                <div class="control-panel" id="professorControls">
+                    <div class="control-copy">
+                        <span class="control-label">Profesor</span>
+                        <h3>Seleccionar docente</h3>
+                        <p>El enfoque pasa de catalogos y expedientes a grupos asignados y captura de calificaciones.</p>
+                    </div>
+
+                    <div class="control-actions">
+                        <select id="profesorSelector" onchange="seleccionarProfesor(this.value)">
+                            <option value="">Selecciona un profesor</option>
+                        </select>
+                        <button class="btn-secondary" onclick="recargarProfesor()">Actualizar vista</button>
+                    </div>
+
+                    <div class="context-indicator" id="profesorIndicador"></div>
+                </div>
+
+                <div class="control-panel" id="adminControls">
+                    <div class="control-copy">
+                        <span class="control-label">Administracion</span>
+                        <h3>Control escolar</h3>
+                        <p>Gestiona catalogos, periodos, grupos y captura global sin mezclarlo con la consulta del alumno.</p>
+                    </div>
+
+                    <div class="control-actions quick-actions">
+                        <button class="btn-secondary" onclick="navegar('admin', 'adminAlumnos')">Alumnos</button>
+                        <button class="btn-secondary" onclick="navegar('admin', 'adminGrupos')">Grupos</button>
+                        <button class="btn-secondary" onclick="navegar('admin', 'adminPeriodos')">Periodos</button>
+                    </div>
+
+                    <div class="context-indicator" id="adminIndicador"></div>
+                </div>
+            </section>
+
+            <section class="overview-grid" id="overviewGrid"></section>
+
+            <section class="workspace-view active" id="workspaceAlumno">
+                <article class="workspace-panel active" id="alumnoResumen">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Vista del alumno</span>
+                            <h3>Resumen academico</h3>
+                        </div>
+                        <p>Primero se consulta el expediente. Despues se profundiza en materias, historial o inscripcion.</p>
+                    </div>
                     <div id="datosPersonales"></div>
-                </div>
-                <div id="materias" class="tab-content">
-                    <div class="section-header"><h2>Materias del Semestre Actual</h2></div>
-                    <div id="materiasActuales"></div>
-                </div>
-                <div id="historial" class="tab-content">
-                    <div class="section-header"><h2>Historial Academico</h2></div>
-                    <div id="historialAcademico"></div>
-                </div>
-                <div id="inscripcion" class="tab-content">
-                    <div class="section-header"><h2>Inscripcion a Materias</h2></div>
-                    <div id="inscripcionPanel"></div>
-                </div>
-                <div id="mapa" class="tab-content">
-                    <div class="section-header"><h2>Ubicacion Geografica</h2></div>
-                    <div id="mapContainer" style="height: 500px;"></div>
-                </div>
-            </div>
+                </article>
 
-            <!-- ═══ MODO ADMINISTRACION ═══ -->
-            <div id="modoAdmin" style="display: none;">
-                <div id="adminAlumnos" class="tab-content active">
-                    <div class="section-header"><h2>Registrar Alumno</h2></div>
+                <article class="workspace-panel" id="alumnoMaterias">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Carga actual</span>
+                            <h3>Materias del periodo</h3>
+                        </div>
+                        <p>Panel de lectura rapida para revisar carga, creditos y horarios.</p>
+                    </div>
+                    <div id="materiasActuales"></div>
+                </article>
+
+                <article class="workspace-panel" id="alumnoHistorial">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Trayectoria</span>
+                            <h3>Historial academico</h3>
+                        </div>
+                        <p>Se prioriza el progreso del alumno y la lectura del promedio en el tiempo.</p>
+                    </div>
+                    <div id="historialAcademico"></div>
+                </article>
+
+                <article class="workspace-panel" id="alumnoInscripcion">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Autoservicio</span>
+                            <h3>Inscripcion a grupos</h3>
+                        </div>
+                        <p>Separa las altas y bajas del resto de la operacion para evitar errores.</p>
+                    </div>
+                    <div id="inscripcionPanel"></div>
+                </article>
+            </section>
+
+            <section class="workspace-view" id="workspaceProfesor">
+                <article class="workspace-panel active" id="profesorResumen">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Vista docente</span>
+                            <h3>Panorama del profesor</h3>
+                        </div>
+                        <p>La pantalla se centra en grupos, cupo y pendientes de captura.</p>
+                    </div>
+                    <div id="profesorResumenPanel"></div>
+                </article>
+
+                <article class="workspace-panel" id="profesorGrupos">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Operacion diaria</span>
+                            <h3>Grupos asignados</h3>
+                        </div>
+                        <p>Consulta rapida de grupos con acceso directo a calificaciones.</p>
+                    </div>
+                    <div id="profesorGruposPanel"></div>
+                </article>
+
+                <article class="workspace-panel" id="profesorCalificaciones">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Captura</span>
+                            <h3>Calificaciones por grupo</h3>
+                        </div>
+                        <p>Este espacio ya no vive dentro de administracion; responde al trabajo natural del profesor.</p>
+                    </div>
+                    <div id="profesorCalificacionesPanel"></div>
+                </article>
+            </section>
+
+            <section class="workspace-view" id="workspaceAdmin">
+                <article class="workspace-panel active" id="adminResumen">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Control escolar</span>
+                            <h3>Panorama operativo</h3>
+                        </div>
+                        <p>Resumen ejecutivo del ciclo, catalogos y acciones mas frecuentes.</p>
+                    </div>
+                    <div id="adminResumenPanel"></div>
+                </article>
+
+                <article class="workspace-panel" id="adminAlumnos">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Registro</span>
+                            <h3>Administrar alumnos</h3>
+                        </div>
+                        <p>Alta y consulta de expedientes dentro de un espacio reservado para control escolar.</p>
+                    </div>
                     <div id="panelAdminAlumnos"></div>
-                </div>
-                <div id="adminMaterias" class="tab-content">
-                    <div class="section-header"><h2>Catalogo de Materias</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminMaterias">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Catalogo</span>
+                            <h3>Materias</h3>
+                        </div>
+                        <p>Manten el plan de oferta academica sin distraer al alumno ni al profesor.</p>
+                    </div>
                     <div id="panelAdminMaterias"></div>
-                </div>
-                <div id="adminProfesores" class="tab-content">
-                    <div class="section-header"><h2>Profesores</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminProfesores">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Personal docente</span>
+                            <h3>Profesores</h3>
+                        </div>
+                        <p>Gestion de docentes y relacion con la operacion academica.</p>
+                    </div>
                     <div id="panelAdminProfesores"></div>
-                </div>
-                <div id="adminAulas" class="tab-content">
-                    <div class="section-header"><h2>Aulas</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminAulas">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Infraestructura</span>
+                            <h3>Aulas</h3>
+                        </div>
+                        <p>Catalogo operativo de espacios fisicos para la programacion de grupos.</p>
+                    </div>
                     <div id="panelAdminAulas"></div>
-                </div>
-                <div id="adminPeriodos" class="tab-content">
-                    <div class="section-header"><h2>Periodos Academicos</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminPeriodos">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Gobernanza del ciclo</span>
+                            <h3>Periodos academicos</h3>
+                        </div>
+                        <p>Define y activa periodos desde una vista enfocada en administracion.</p>
+                    </div>
                     <div id="panelAdminPeriodos"></div>
-                </div>
-                <div id="adminGrupos" class="tab-content">
-                    <div class="section-header"><h2>Grupos</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminGrupos">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Oferta del periodo</span>
+                            <h3>Grupos</h3>
+                        </div>
+                        <p>Organiza asignaciones de materia, profesor, aula y cupo.</p>
+                    </div>
                     <div id="panelAdminGrupos"></div>
-                </div>
-                <div id="adminCalificaciones" class="tab-content">
-                    <div class="section-header"><h2>Captura de Calificaciones</h2></div>
+                </article>
+
+                <article class="workspace-panel" id="adminCalificaciones">
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-kicker">Operacion excepcional</span>
+                            <h3>Captura global de calificaciones</h3>
+                        </div>
+                        <p>Se conserva para control escolar, pero separada de la experiencia natural del profesor.</p>
+                    </div>
                     <div id="panelAdminCalificaciones"></div>
-                </div>
-            </div>
+                </article>
+            </section>
         </main>
     </div>
 
-    <!-- Mobile sidebar toggle -->
     <button class="mobile-menu-btn" onclick="toggleSidebar()">&#9776;</button>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/static/app.js"></script>
     <script src="/static/admin.js"></script>

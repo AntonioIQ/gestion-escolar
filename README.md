@@ -73,10 +73,10 @@ python -m sql.migrate
 ## Ejecucion
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8001
 ```
 
-Abrir http://localhost:8000 en el navegador.
+Abrir http://localhost:8001 en el navegador.
 
 ### Arranque automatico (servidor dedicado)
 

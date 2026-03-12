@@ -228,10 +228,11 @@ def eliminar_aula(aula_id: int):
 
 
 @app.get("/api/grupos")
-def listar_grupos(periodo_id: int | None = None):
+def listar_grupos(periodo_id: int | None = None, profesor_id: int | None = None):
     base = """SELECT g.id, m.codigo, m.nombre AS materia, m.creditos,
-                     p.nombre AS profesor, a.nombre AS aula, g.horario,
-                     per.nombre AS periodo, g.cupo_maximo,
+                     p.id AS profesor_id, p.nombre AS profesor,
+                     a.nombre AS aula, g.horario,
+                     per.id AS periodo_id, per.nombre AS periodo, g.cupo_maximo,
                      g.cupo_maximo - COUNT(i.id) AS cupo_disponible
               FROM grupos g
               JOIN materias m ON g.materia_codigo = m.codigo
@@ -241,12 +242,27 @@ def listar_grupos(periodo_id: int | None = None):
               LEFT JOIN inscripciones i ON i.grupo_id = g.id"""
 
     group_by = """GROUP BY g.id, m.codigo, m.nombre, m.creditos,
-                          p.nombre, a.nombre, g.horario, per.nombre, g.cupo_maximo
+                          p.id, p.nombre, a.nombre, g.horario,
+                          per.id, per.nombre, g.cupo_maximo
                   ORDER BY m.nombre"""
 
+    conditions = []
+    params: list[int] = []
+
     if periodo_id:
-        return query(f"{base} WHERE g.periodo_id = %s {group_by}", (periodo_id,))
-    return query(f"{base} WHERE per.activo = TRUE {group_by}")
+        conditions.append("g.periodo_id = %s")
+        params.append(periodo_id)
+    else:
+        conditions.append("per.activo = TRUE")
+
+    if profesor_id:
+        conditions.append("p.id = %s")
+        params.append(profesor_id)
+
+    sql = f"{base} WHERE {' AND '.join(conditions)} {group_by}"
+    if params:
+        return query(sql, tuple(params))
+    return query(sql)
 
 
 # ── Inscripciones ────────────────────────────────────────────────────────────
